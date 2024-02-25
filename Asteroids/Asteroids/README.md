@@ -1,18 +1,1 @@
-## Getting Started
-
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
-
-## Folder Structure
-
-The workspace contains two folders by default, where:
-
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
-
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Videogioco realizzato in una giornata d'estate con Java Swing, il gioco consiste nel resistere il piu' a lungo possibile schivando degli asteroidi che cadono, e' possibile colpirli con un proiettile che poi richiede del tempo per essere ricaricato, non e' un gioco complesso tanto da essere stato realizzato in circa una giornata, mi ero promesso poi di pulire un po' il codice i giorni seguenti ma sinceramente non ricordo neanche se poi lo ho realmente fatto
