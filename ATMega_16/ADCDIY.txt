@@ -1,0 +1,105 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "lcd.h"
+#include <stdio.h>
+#include <string.h>
+
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte (esempio)
+ 	PORTB = 0b11111111;
+	DDRB = 0b00000000;
+	PORTC = 0b11110000;
+	DDRC = 0b00001111;
+	PORTD = 0b11111011;
+	DDRD = 0b00000000;
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+int main(void)
+{
+	mcu_setup();
+	int I,J;
+	int volt=0;
+	int ris=0;
+	char risultato[5];
+	char stringa[5];
+	PORTC=0;
+	
+	while(1)
+	{
+		
+		for(I=0;I<4;I++)
+		{
+				SET(PORTC,I);
+				
+			if(!TST(PIND,2))          //maggiore di VI
+			{
+				risultato[I]=0;		
+				CLR(PORTC,I);
+			}
+			else                     //minore di VI
+		    {
+				risultato[I]=1;
+			}
+				
+		}
+	
+	//	for(J=0;J<4;J++)
+	//	{
+			if(risultato[0])
+			{
+				ris+=8;
+			}
+			if(risultato[1])
+			{
+				ris+=4;
+			}
+			if(risultato[2])
+			{
+				ris+=2;
+			}
+			if(risultato[3])
+			{
+				ris+=1;
+			}
+			
+			volt=(ris*30); //sarebbe moltiplicato per 0.3
+			volt%100
+			
+	//	}
+	
+//	sprintf(stringa,risultato);
+//	LCD_writeln(0,risultato);
+		
+		
+		
+	}
+}
+

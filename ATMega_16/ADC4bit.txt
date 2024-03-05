@@ -1,0 +1,134 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "lcd.h"
+#include "timers.h"
+#include <stdio.h>
+#include <string.h>
+
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte 
+ 	PORTB = 0b11111111;
+	DDRB =  0b00000000;
+	PORTC = 0b11110000;
+	DDRC =  0b00001111;
+	PORTD = 0b10101011;
+	DDRD =  0b01010000;
+	PORTA = 0b00001111;
+	DDRA =  0b11110000;
+
+	TCCR0=0b00000011;
+	OCR0=124;
+	SET(TIMSK, OCIE0);
+	
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+	
+	LCD_init();
+	LCD_clear();
+	LCD_home();
+}
+
+ISR(TIMER0_COMP_vect)		// interrupt ogni millisecondo
+{
+	update_timers();
+}
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+int main(void)
+{
+	mcu_setup();
+	U16 I,decimale;
+	U16 volt=0;
+	U16 ris=0;
+	char risultato[5];
+	char stringa[20];
+	char stringa2[20];
+	PORTC=0;
+	
+	while(1)
+	{
+		
+		for(I=0;I<4;I++)
+		{
+				SET(PORTC,I);
+				delayMs(20);
+				
+			if(!TST(PIND,2))          //maggiore di VI
+			{
+				risultato[I]=0;		
+				CLR(PORTC,I);
+			}
+			else                     //minore di VI
+		    {
+				risultato[I]=1;
+			}
+				
+		}
+	
+		for(J=0;J<4;J++)
+		{
+			if(risultato[0])
+			{
+				ris+=8;
+			}
+			if(risultato[1])
+			{
+				ris+=4;
+			}
+			if(risultato[2])
+			{
+				ris+=2;
+			}
+			if(risultato[3])
+			{
+				ris+=1;
+			}
+			
+			volt=(ris*3); //sarebbe moltiplicato per 0.3 se fatto con float
+			//decimale = (volt*1000);
+			decimale=volt%10;
+			
+			if(timeout(1))
+			{
+				set_timer(1,80);
+				sprintf(stringa, "%d",ris);
+				LCD_writeln(0,stringa);
+				
+				sprintf(stringa2, "%d , %d",(volt/10),decimale);	
+				LCD_writeln(1,stringa2);
+			}
+			
+	//	}
+	
+//	sprintf(stringa,risultato);
+//	LCD_writeln(0,risultato);
+		
+		
+		
+	}
+}
+

@@ -1,0 +1,85 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "uart.h"
+#include "timers.h"
+#include "lcd.h"
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte
+	DDRA  = 0b11110000;
+	PORTA = 0b00001110;				//PA0 è analogico quindi no resistenza di pull up
+	DDRB  = 0b00000000;
+	PORTB = 0b11111111;
+	DDRC  = 0b00000011;
+	PORTC = 0b11111100;
+	DDRD  = 0b11110000;
+	PORTD = 0b00001111;
+
+	// Configurazione periferiche utilizzate
+	
+		
+		LCD_init();
+		LCD_clear();
+		LCD_home();
+		LCD_cursor(1);
+		
+	
+	//TCCR1A=0b10000001;
+	//TCCR1B=0b00001001;
+	
+	ADMUX=0b01000000;
+	ADCSRA=0b10000110;
+	
+	TCCR0=0b00000011;
+	OCR0=124;
+	SET(TIMSK, OCIE0);
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+ISR(TIMER0_COMP_vect)		// interrupt ogni millisecondo
+{
+	update_timers();
+}
+int main(void)
+{
+	mcu_setup();
+	U8 setpoint=20;
+	while(1) 
+	{
+		if(!TST(PINB,4))
+		{
+			if(timeout(1))
+			{
+				set_timer(1,1500);
+				
+			}
+		}
+	
+	}
+}

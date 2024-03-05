@@ -1,0 +1,156 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "lcd.h"
+#include "timers.h"
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte
+	DDRA  = 0b11110000;	
+	PORTA = 0b00001111;
+	DDRB  = 0b00000000;
+	PORTB = 0b11111111;
+	DDRC  = 0b00000011;
+	PORTC = 0b11111100;
+	DDRD  = 0b01010000;
+	PORTD = 0b10101111;
+	
+	MCUCR=0b00000011;
+	SET(GICR,INT0);
+	
+	LCD_init();
+	LCD_clear();
+	LCD_home();
+	LCD_cursor(1);
+	
+	TCCR0=0b00001011;
+	OCR0=124;
+	SET(TIMSK, OCIE0);
+	
+	//configurazione display
+	
+
+	// Configurazione periferiche utilizzate
+	
+
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+	volatile S16 contatore;
+	volatile int ris,deltas;
+	volatile S16 giri;
+	volatile U16 giri2,giri3;
+	volatile U8 I;
+
+ISR(INT0_vect)
+{
+	if(TST(PIND,3))
+	{
+		I=1;
+		contatore++;
+		deltas++;
+		
+	}
+	else 
+	{
+		I=0;
+		contatore--;
+		deltas++;
+	
+	}
+	
+				if(contatore>=1023)
+				{
+					contatore=0;
+					giri++;
+				}
+				if(contatore<=-1023)
+				{
+					contatore=0;
+					giri--;
+				}
+
+}
+
+ISR(TIMER0_COMP_vect)
+{
+	update_timers();
+}
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+int main(void)
+{
+	mcu_setup();
+	char str1[20];
+	char str2[20];
+	
+	while(1) 
+	{
+		
+		if(timeout(2))
+		{
+			set_timer(2,1000);
+			giri2=deltas/1024;
+			giri3=((U32)(deltas*1000)/1024)%100;		//cambiare in u32 o 16
+			sprintf(str2,"giri sec: %d,%d",giri2,giri3);
+			deltas=0;
+		}
+			
+		if(I==1)
+		{	
+			CLR(PORTC,1);
+			SET(PORTC,0);
+			
+			if(timeout(1))
+			{
+				set_timer(1,100);
+				sprintf(str1,"avanti %d",giri);
+				LCD_writeln(0,str1);
+				LCD_writeln(1,str2);
+				
+			}
+		}
+		if(I==0)
+		{
+			CLR(PORTC,0);
+			SET(PORTC,1);
+			if(timeout(1))
+			{
+				set_timer(1,100);
+				sprintf(str1,"indietro %d",giri);
+				LCD_writeln(0,str1);
+				LCD_writeln(1,str2);
+				
+			}
+		}
+
+	}
+}
+

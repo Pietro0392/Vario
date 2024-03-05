@@ -1,0 +1,286 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "lcd.h"
+#include "timers.h"
+#include <stdio.h>
+#include <string.h>
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte
+	DDRA  = 0b11110000;	
+	PORTA = 0b00001111;
+	DDRB  = 0b00000000;
+	PORTB = 0b11111111;
+	DDRC  = 0b00001111;
+	PORTC = 0b11110000;
+	DDRD  = 0b01010000;
+	PORTD = 0b10101111;
+	
+	
+	LCD_init();
+	LCD_clear();
+	LCD_home();
+	LCD_cursor(1);
+	
+	TCCR0=0b00001011;
+	OCR0=124;
+	SET(TIMSK, OCIE0);
+	
+	//configurazione display
+	
+
+	// Configurazione periferiche utilizzate
+	
+
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+
+ISR(TIMER0_COMP_vect)		// interrupt ogni millisecondo
+{
+	update_timers();
+}
+
+int main(void)
+{
+	mcu_setup();
+	int I=0;
+	char stringa[17];
+	
+	while(1) 
+	{
+	//	label:
+		
+			if(!TST(PINB,5))
+			{I=0;
+												CLR(PORTC,0);
+												CLR(PORTC,1);
+												CLR(PORTC,2);
+												CLR(PORTC,3);
+												delayMs(500);
+												while(!TST(PINB,5)){}
+									
+			}
+			
+						if(!TST(PINA,0))
+						{I=2;
+							CLR(PORTC,0);
+							CLR(PORTC,1);
+							CLR(PORTC,2);
+							CLR(PORTC,3);
+							delayMs(500);
+							while(!TST(PINA,0)){}
+							
+						}
+						
+											if(!TST(PIND,0))
+											{I=3;
+												CLR(PORTC,0);
+												CLR(PORTC,1);
+												CLR(PORTC,2);
+												CLR(PORTC,3);
+												delayMs(500);
+												while(!TST(PIND,0)){}
+												
+											}
+
+			if(!TST(PINB,4))
+			{I=1;
+												CLR(PORTC,0);
+												CLR(PORTC,1);
+												CLR(PORTC,2);
+												CLR(PORTC,3);
+												delayMs(500);
+												while(!TST(PINB,4)){}
+												}
+			if(!TST(PINB,6))
+			{I=-1;
+												CLR(PORTC,0);
+												CLR(PORTC,1);
+												CLR(PORTC,2);
+												CLR(PORTC,3);
+												delayMs(500);
+												while(!TST(PINB,6)){}
+												}
+			
+			if(I==0)
+			{
+													strcpy(stringa,"Motore Fermo");
+													LCD_writeln(0,stringa);
+						CLR(PORTC,0);
+						CLR(PORTC,1);
+						CLR(PORTC,2);
+						CLR(PORTC,3);
+			}
+			
+			if(I==1)	
+			{
+									strcpy(stringa,"Delay:20ms");
+									LCD_writeln(0,stringa);
+				set_timer(1,20);
+				while(!timeout(1))
+				{
+					SET(PORTC,0);
+
+				}
+				CLR(PORTC,0);
+				set_timer(1,20);
+								while(!timeout(1))
+								{
+									SET(PORTC,1);
+
+								}
+								CLR(PORTC,1);
+								set_timer(1,20);
+												while(!timeout(1))
+												{
+													SET(PORTC,2);
+
+												}
+												CLR(PORTC,2);
+												set_timer(1,20);
+																while(!timeout(1))
+																{
+																	SET(PORTC,3);
+	
+																}
+																CLR(PORTC,3);
+				
+				
+			}
+			
+		if(I==-1)
+		{
+												strcpy(stringa,"Marcia inversa");
+												LCD_writeln(0,stringa);
+			set_timer(1,20);
+			while(!timeout(1))
+			{
+				SET(PORTC,3);
+
+			}
+			CLR(PORTC,3);
+			set_timer(1,20);
+			while(!timeout(1))
+			{
+				SET(PORTC,2);
+
+			}
+			CLR(PORTC,2);
+			set_timer(1,20);
+			while(!timeout(1))
+			{
+				SET(PORTC,1);
+
+			}
+			CLR(PORTC,1);
+			set_timer(1,20);
+			while(!timeout(1))
+			{
+				SET(PORTC,0);
+				
+			}
+			CLR(PORTC,0);
+		}
+		if(I==2)
+		{
+			strcpy(stringa,"Delay: 10ms");
+			LCD_writeln(0,stringa);
+			set_timer(1,10);
+			while(!timeout(1))
+			{
+				SET(PORTC,0);
+
+			}
+			CLR(PORTC,0);
+			set_timer(1,10);
+			while(!timeout(1))
+			{
+				SET(PORTC,1);
+
+			}
+			CLR(PORTC,1);
+			set_timer(1,10);
+			while(!timeout(1))
+			{
+				SET(PORTC,2);
+
+			}
+			CLR(PORTC,2);
+			set_timer(1,10);
+			while(!timeout(1))
+			{
+				SET(PORTC,3);
+				
+			}
+			CLR(PORTC,3);
+			
+			
+		}
+		
+				if(I==3)
+				{
+					strcpy(stringa,"Delay: 40ms");
+					LCD_writeln(0,stringa);
+					set_timer(1,40);
+					while(!timeout(1))
+					{
+						SET(PORTC,0);
+
+					}
+					CLR(PORTC,0);
+					set_timer(1,40);
+					while(!timeout(1))
+					{
+						SET(PORTC,1);
+
+					}
+					CLR(PORTC,1);
+					set_timer(1,40);
+					while(!timeout(1))
+					{
+						SET(PORTC,2);
+
+					}
+					CLR(PORTC,2);
+					set_timer(1,40);
+					while(!timeout(1))
+					{
+						SET(PORTC,3);
+						
+					}
+					CLR(PORTC,3);
+					
+					
+				}
+	}
+}
+
+

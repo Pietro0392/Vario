@@ -1,0 +1,82 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "lcd.h"
+#include <stdio.h>
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte
+	DDRA  = 0b11110000;	
+	PORTA = 0b00000111;
+	DDRB  = 0b00000000;
+	PORTB = 0b11111111;
+	DDRC  = 0b00000000;
+	PORTC = 0b11111111;
+	DDRD  = 0b01010000;
+	PORTD = 0b10101111;
+	
+	LCD_init();
+	LCD_clear();
+	LCD_home();
+	LCD_cursor(1);
+	
+	ADMUX=0b01000011;
+	ADCSRA=0b10000110;
+	
+	
+	//configurazione display
+	
+
+	// Configurazione periferiche utilizzate
+	
+
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+int main(void)
+{
+	mcu_setup();
+	U16 risultato,ris2,resto,volt;
+	
+	char stringa[17];
+	while(1) 
+	{
+		SET(ADCSRA,ADSC);
+		while(TST(ADCSRA,ADSC)){}
+		risultato=ADC;
+		ris2= ((U32)(risultato-1)*(1005)/1022);
+	//	volt= ris2/1000;
+	//	resto= ris2%100;
+					
+		sprintf(stringa,"Rotazione= %d %",(ris2/10));
+		LCD_writeln(0,stringa);
+		delayMs(100);	
+	}
+}
+

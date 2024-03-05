@@ -1,0 +1,83 @@
+/*********************************************
+  NOME FILE   : ___.c
+  DESCRIZIONE : 
+  MCU	      : Atmel ATmega16 @ 8MHz
+  COMPILATORE : WinAVR-20070525 (GCC 4.1.2)
+  AUTORE      : 
+  VERSIONE    : 1.0
+*********************************************/
+#include "common.h"
+#include "uart.h"
+#include "timers.h"
+#include "lcd.h"
+
+/*********************************************
+   FUNZIONE   : mcu_setup
+   DESCRIZIONE: Inizializzazione periferiche MCU.
+   PARAMETRI  : nessuno
+   RETURN CODE: nessuno
+*********************************************/
+void mcu_setup(void)
+{
+	// Configurazione porte
+	DDRA  = 0b00000000	//aggiungere commenti sul singolo I/O
+	PORTA = 0b11111111;
+	DDRB  = 0b00000000;
+	PORTB = 0b11111111;
+	DDRC  = 0b00000011;
+	PORTC = 0b11111100;
+	DDRD  = 0b00100010;
+	PORTD = 0b11011101;
+
+	// Configurazione periferiche utilizzate
+	
+	TCCR1A=0b10000001;
+	TCCR1B=0b00001001;
+	uart_init();
+
+	// watchdog
+	wdt_reset();                   
+	wdt_disable();        //disabilita wdt
+
+	// interrupt
+	SEI();                //abilita interruzioni
+}
+
+/*********************************************
+   FUNZIONE   : main
+   DESCRIZIONE: Main loop
+   PARAMETRI  : nessuno
+   RETURN CODE: ignorato
+*********************************************/
+int main(void)
+{
+	U8 uno;
+	mcu_setup();
+	while(1) 
+	{
+		if(uart_test())
+		{
+			uno=uart_get();
+			if(uno==65)
+			{
+				OCR1AL=10;
+			}
+			if(uno==66)
+			{
+				OCR1AL=60;
+			}
+			if(uno==67)
+			{
+				OCR1AL=110;
+			}
+			if(uno==68)
+			{
+				OCR1AL=160;
+			}
+			if(uno==69)
+			{
+				OCR1AL=210;
+			}
+		}
+	}
+}
